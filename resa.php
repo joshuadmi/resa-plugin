@@ -185,13 +185,70 @@ function afficher_formulaire_evenement()
         <p><label>Adresse de la prestation :</label><br>
             <input type="text" name="lieu_prestation" value="<?php echo esc_attr($lieu); ?>">
         </p>
-        <p><label>Nombre de participants :</label><br>
-            <input type="number" name="nb_participants" min="1">
+        <p><label>Date de la prestation :</label><br>
+            <input type="date" name="date_prestation">
         </p>
+        <p><label>Nombre de participants :</label><br>
+            <input type="number" name="nb_participants" min="10">
+        </p>
+        <p>
+            <label>Coût estimé :</label>
+            <small>(Calculé automatiquement en fonction du type de prestation et du nombre de participants)</small><br>
+            <input type="text" id="cout_estime" name="cout_estime" readonly>
+        </p>
+
+
         <p><label>Informations complémentaires :</label><br>
             <textarea name="infos_complementaires"></textarea>
         </p>
         <p><button type="submit" class="bouton">Soumettre la demande</button></p>
+
+        <?php if ($type === 'entreprise') : ?>
+            <p><em>En tant qu’entreprise, cette prestation vous sera facturée. Un devis vous sera envoyé.</em></p>
+        <?php elseif ($type === 'collectivite') : ?>
+            <p><em>En tant que collectivité, la prestation pourra être gratuite selon les subventions. Une vérification sera faite.</em></p>
+        <?php endif; ?>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const typeSelect = document.querySelector('select[name="type_prestation"]');
+                const participantsInput = document.querySelector('input[name="nb_participants"]');
+                const coutField = document.getElementById('cout_estime');
+
+                function calculerCout() {
+                    const type = typeSelect.value;
+                    const participants = parseInt(participantsInput.value) || 0;
+                    let tarifUnitaire = 0;
+
+                    switch (type) {
+                        case 'formation':
+                            tarifUnitaire = 30;
+                            break;
+                        case 'formation_kids':
+                            tarifUnitaire = 25;
+                            break;
+                        case 'atelier':
+                            tarifUnitaire = 20;
+                            break;
+                        case 'sensibilisation':
+                            tarifUnitaire = 15;
+                            break;
+                    }
+
+                    const total = participants * tarifUnitaire;
+                    if (type && participants) {
+                        coutField.value = total + ' €';
+                    } else {
+                        coutField.value = '';
+                    }
+                }
+
+                typeSelect.addEventListener('change', calculerCout);
+                participantsInput.addEventListener('input', calculerCout);
+            });
+        </script>
+
+
     </form>
 <?php
     return ob_get_clean();
@@ -281,6 +338,10 @@ function traiter_demande_evenement()
         update_post_meta($post_id, '_resa_organisateur_email', sanitize_email($_POST['contact_email']));
         update_post_meta($post_id, '_resa_organisateur_tel', sanitize_text_field($_POST['contact_tel']));
         update_post_meta($post_id, '_resa_type_prestation', sanitize_text_field($_POST['type_prestation']));
+        update_post_meta($post_id, '_resa_date', sanitize_text_field($_POST['date_prestation']));
+        update_post_meta($post_id, '_resa_cout_estime', sanitize_text_field($_POST['cout_estime']));
+
+
 
         // Redirection après succès
         wp_redirect(home_url('/home'));
@@ -375,6 +436,9 @@ function resa_ajouter_colonnes_evenement($colonnes)
     $colonnes['type_prestation'] = 'Type de prestation';
     $colonnes['nb_participants'] = 'Participants';
     $colonnes['type_organisateur'] = 'Type d\'organisateur';
+    $colonnes['date_prestation'] = 'Date souhaitée';
+    $colonnes['cout_estime'] = 'Coût estimé';
+
 
     return $colonnes;
 }
@@ -395,6 +459,10 @@ function resa_afficher_contenu_colonnes_evenement($colonne, $post_id)
     if ($colonne === 'type_organisateur') {
         $type = get_post_meta($post_id, '_resa_organisateur_type', true);
         echo esc_html($type ?: '—');
+    };
+    if ($colonne === 'cout_estime') {
+        $cout = get_post_meta($post_id, '_resa_cout_estime', true);
+        echo esc_html($cout ?: '—');
     }
 }
 add_action('manage_evenement_posts_custom_column', 'resa_afficher_contenu_colonnes_evenement', 10, 2);
