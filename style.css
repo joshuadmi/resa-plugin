@@ -1,0 +1,106 @@
+/* Réinitialisation légère */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Style général des événements */
+.liste-evenements {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 20px;
+}
+
+.evenement {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.image-left .evenement-image {
+  order: 0;
+}
+
+.image-right .evenement-image {
+  order: 1;
+}
+
+.evenement-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  max-height: 250px;
+}
+
+.evenement-texte {
+  flex: 1;
+  min-width: 280px;
+}
+
+.evenement h2 {
+  margin-top: 0;
+}
+
+/* Bouton générique */
+.bouton {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #1c3d5a;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+.bouton:hover {
+  background-color: #163047;
+}
+
+/* Formulaires */
+form {
+  max-width: 600px;
+  margin: 0 auto 40px;
+  padding: 20px;
+  background: #f4f4f4;
+  border-radius: 8px;
+}
+
+form p {
+  margin-bottom: 15px;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="tel"],
+form input[type="number"],
+form textarea,
+form select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+form button.bouton {
+  width: 100%;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .evenement {
+    flex-direction: column;
+  }
+
+  .evenement-image {
+    order: 0 !important;
+  }
+}
