@@ -84,11 +84,11 @@ add_action('wp_enqueue_scripts', 'resa_charger_styles'); // hook en charge du st
 
 
 // --- Formulaire frontend : création d'un profil organisateur ---
+
+// Capture du HTML généré avec ob_start et get_clean
+// utilisation d'un jeton de sécurité avec wp_nonce_field
 function afficher_formulaire_organisateur()
 {
-
-    // Capture du HTML généré avec ob_start et get_clean
-    // utilisation d'un jeton de sécurité avec wp_nonce_field
     ob_start(); ?>
     <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
         <?php wp_nonce_field('create_organisateur_action', 'organisateur_nonce'); ?>
@@ -109,10 +109,17 @@ function afficher_formulaire_organisateur()
         <p><label>Téléphone du contact :</label><br><input type="tel" name="organisateur_tel" required></p>
         <p><label>Lieu de la prestation par défaut :</label><br><input type="text" name="organisateur_lieu_defaut"></p>
         <p><label>Autres informations :</label><br><textarea name="organisateur_infos"></textarea></p>
+
+        <hr>
+        <h4>Informations de connexion</h4>
+        <p><label>Nom d'utilisateur souhaité :</label><br><input type="text" name="organisateur_username" required></p>
+        <p><label>Mot de passe :</label><br><input type="password" name="organisateur_password" required></p>
+
         <p><button type="submit" class="bouton">Envoyer la demande</button></p>
     </form>
 <?php return ob_get_clean();
 }
+
 
 // création du shortcode pour affichage dans la page 
 add_shortcode('organisateur_form', 'afficher_formulaire_organisateur');
@@ -120,35 +127,36 @@ add_shortcode('organisateur_form', 'afficher_formulaire_organisateur');
 // Formulaire de demande d'événement pré-rempli pour un organisateur
 function afficher_formulaire_evenement()
 {
-    if (!is_user_logged_in()) { //vérification de connexion
+    if (!is_user_logged_in()) {
         return '<p>Vous devez être connecté pour demander un événement.</p>';
     }
 
-    $current_user = wp_get_current_user(); // récupération de l'utilisateur connecté
+    $current_user = wp_get_current_user();
 
-    // création de tableau avec les critères pour récupérer les données
+    // 🔍 On cherche un post de type "organisateur" dont la métadonnée user_id correspond à l'utilisateur actuel
     $args = array(
-        'post_type' => 'organisateur', // récupère le contenu 
-        'post_status' => 'publish', // uniquement les post qui ont été publiés
-        'posts_per_page' => 1, // un résultat par profil
-        'author' => $current_user->ID // récupère l'ID conneté actuellement
+        'post_type'  => 'organisateur',
+        'post_status' => 'publish',
+        'meta_key'   => 'user_id',
+        'meta_value' => $current_user->ID,
+        'posts_per_page' => 1
     );
-    $organisateurs = get_posts($args); // stocke les résultats dans un tableau
+    $organisateurs = get_posts($args);
 
     if (empty($organisateurs)) {
-        return '<p>Aucun profil organisateur trouvé.</p>';
+        return '<p>Aucun profil organisateur validé trouvé.</p>';
     }
 
-    $organisateur = $organisateurs[0]; // prend le premier utilisateur trouvé dans le tableau (index 0)
+    $organisateur = $organisateurs[0];
 
-    // récupération des données utilisateur
+    // Récupération des champs
     $type = get_post_meta($organisateur->ID, 'organisateur_type', true);
     $nom = get_the_title($organisateur);
     $adresse = get_post_meta($organisateur->ID, 'organisateur_adresse', true);
     $contact_nom = get_post_meta($organisateur->ID, 'organisateur_contact_nom', true);
     $fonction = get_post_meta($organisateur->ID, 'organisateur_contact_fonction', true);
-    $email = get_post_meta($organisateur->ID, 'organisateur_contact_email', true);
-    $tel = get_post_meta($organisateur->ID, 'organisateur_contact_tel', true);
+    $email = get_post_meta($organisateur->ID, 'organisateur_email', true);
+    $tel = get_post_meta($organisateur->ID, 'organisateur_tel', true);
     $lieu = get_post_meta($organisateur->ID, 'organisateur_lieu_defaut', true);
 
     ob_start(); ?>
@@ -176,10 +184,10 @@ function afficher_formulaire_evenement()
         <p><label>Type de prestation :</label><br>
             <select name="type_prestation">
                 <option value="">-- Sélectionnez --</option>
-                <option value="formation">Formation Premiers Secours</option>
-                <option value="formation_kids">Formation Premiers Secours Enfants</option>
-                <option value="atelier">Atelier Gestes qui Sauve,t</option>
-                <option value="sensibilisation">Sensibilisation Cybersécurité</option>
+                <option value="Formation">Formation Premiers Secours</option>
+                <option value="Formation">Formation Premiers Secours Enfants</option>
+                <option value="Atelier">Atelier Gestes qui Sauve,t</option>
+                <option value="Sensibilisation">Sensibilisation Cybersécurité</option>
             </select>
         </p>
         <p><label>Adresse de la prestation :</label><br>
@@ -257,33 +265,46 @@ function afficher_formulaire_evenement()
 function traiter_creation_organisateur()
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Sécurité
         if (!isset($_POST['organisateur_nonce']) || !wp_verify_nonce($_POST['organisateur_nonce'], 'create_organisateur_action')) {
             wp_die('Vérification échouée');
+        }
+
+        $username = sanitize_user($_POST['organisateur_username']);
+        $password = sanitize_text_field($_POST['organisateur_password']);
+        $email = sanitize_email($_POST['organisateur_email']);
+
+        // Création de l’utilisateur
+        $user_id = wp_create_user($username, $password, $email);
+
+        if (is_wp_error($user_id)) {
+            wp_die('Erreur lors de la création de l’utilisateur : ' . $user_id->get_error_message());
         }
 
         // Création du post organisateur
         $post_id = wp_insert_post(array(
             'post_type'    => 'organisateur',
             'post_title'   => sanitize_text_field($_POST['organisateur_nom']),
-            'post_status'  => 'pending'
+            'post_status'  => 'pending',
+            'post_author'  => $user_id
         ));
 
-        // Sauvegarde des autres champs si nécessaire
+        // Champs personnalisés
         update_post_meta($post_id, 'organisateur_type', sanitize_text_field($_POST['organisateur_type']));
         update_post_meta($post_id, 'organisateur_adresse', sanitize_textarea_field($_POST['organisateur_adresse']));
         update_post_meta($post_id, 'organisateur_contact_nom', sanitize_text_field($_POST['organisateur_contact_nom']));
         update_post_meta($post_id, 'organisateur_contact_fonction', sanitize_text_field($_POST['organisateur_contact_fonction']));
-        update_post_meta($post_id, 'organisateur_email', sanitize_email($_POST['organisateur_email']));
+        update_post_meta($post_id, 'organisateur_email', $email);
         update_post_meta($post_id, 'organisateur_tel', sanitize_text_field($_POST['organisateur_tel']));
         update_post_meta($post_id, 'organisateur_lieu_defaut', sanitize_text_field($_POST['organisateur_lieu_defaut']));
         update_post_meta($post_id, 'organisateur_infos', sanitize_textarea_field($_POST['organisateur_infos']));
+        update_post_meta($post_id, 'user_id', $user_id); // lien avec l'utilisateur
 
-        // Redirection après soumission
-        wp_redirect(home_url('/home'));
+        // Redirection
+        wp_redirect(home_url('/confirmation-inscription'));
         exit;
     }
 }
+
 // traitement des hooks corrspondants
 add_action('admin_post_nopriv_create_organisateur', 'traiter_creation_organisateur');
 add_action('admin_post_create_organisateur', 'traiter_creation_organisateur');
@@ -427,6 +448,24 @@ function resa_afficher_evenements($atts) // fonction avec attributs du shortcode
     return ob_get_clean();
 }
 
+function resa_bloc_connexion()
+{
+    ob_start();
+
+    if (is_user_logged_in()) {
+        $current_user = wp_get_current_user();
+        echo '<p>Connecté en tant que <strong>' . esc_html($current_user->display_name) . '</strong></p>';
+        echo '<a  class="bouton" href="' . esc_url(wp_logout_url(home_url())) . '">Se déconnecter</a>';
+    } else {
+        echo '<a href="' . esc_url(wp_login_url()) . '">Se connecter</a>';
+    }
+
+    return ob_get_clean();
+}
+add_shortcode('resa_login_logout', 'resa_bloc_connexion');
+
+
+
 //Shortcode
 add_shortcode('afficher_evenements', 'resa_afficher_evenements');
 
@@ -501,3 +540,15 @@ function resa_afficher_metabox_organisateur($post)
     echo '<p><strong>Lieu de la prestation par défaut :</strong> ' . esc_html($lieu) . '</p>';
     echo '<p><strong>Autres informations :</strong><br>' . nl2br(esc_html($infos)) . '</p>';
 }
+
+function resa_redirection_apres_login($redirect_to, $request, $user)
+{
+    // Si l'utilisateur s'est connecté avec succès
+    if (isset($user->roles) && is_array($user->roles)) {
+        // Redirection vers la page d’accueil (ou une page spécifique si tu préfères)
+        return home_url(); // ou par exemple home_url('/tableau-de-bord') si tu crées une page dédiée
+    }
+
+    return $redirect_to;
+}
+add_filter('login_redirect', 'resa_redirection_apres_login', 10, 3);
