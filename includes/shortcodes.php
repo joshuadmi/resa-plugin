@@ -14,7 +14,8 @@ add_shortcode('organisateur_form', 'afficher_formulaire_organisateur');
 
 
 // Shortcode : Formulaire événement
-function afficher_formulaire_evenement() {
+function afficher_formulaire_evenement()
+{
     if (!is_user_logged_in()) {
         return '<p>Vous devez être connecté pour demander un événement.</p>';
     }
@@ -68,7 +69,7 @@ function afficher_formulaire_reservation_invite()
 
     return ob_get_clean();
 }
-add_shortcode('formulaire_reservation_invite', 'formulaire_reservation');
+add_shortcode('formulaire_reservation_invite', 'afficher_formulaire_reservation_invite');
 
 
 // Shortcode : Connexion/Déconnexion

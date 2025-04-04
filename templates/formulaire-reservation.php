@@ -19,9 +19,15 @@ if (!defined('ABSPATH')) exit; ?>
                     'meta_value' => 'collectivite'
                 ));
 
+                $selected_event = isset($_GET['id']) ? intval($_GET['id']) : null;
+
+
                 foreach ($evenements as $event) {
-                    echo '<option value="' . esc_attr($event->ID) . '">' . esc_html($event->post_title) . '</option>';
+                    $selected = ($selected_event === $event->ID) ? 'selected' : '';
+                    echo '<option value="' . esc_attr($event->ID) . '" ' . $selected . '>' . esc_html($event->post_title) . '</option>';
                 }
+                
+                
                 ?>
             </select>
         </p>

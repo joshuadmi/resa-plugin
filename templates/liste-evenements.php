@@ -16,11 +16,13 @@ if ($query->have_posts()) :
         $heure = get_post_meta(get_the_ID(), '_resa_heure', true);
         $lieu = get_post_meta(get_the_ID(), '_resa_lieu', true);
         $places = get_post_meta(get_the_ID(), '_resa_places', true);
-        ?>
+?>
         <article class="evenement <?php echo esc_attr($class); ?>">
             <?php if ($image) : ?>
                 <div class="evenement-image"><?php echo $image; ?></div>
             <?php endif; ?>
+
+
 
             <div class="evenement-texte">
                 <h2><?php the_title(); ?></h2>
@@ -30,9 +32,17 @@ if ($query->have_posts()) :
                 <?php if ($lieu) : ?><p><strong>Lieu :</strong> <?php echo esc_html($lieu); ?></p><?php endif; ?>
                 <?php if ($places) : ?><p><strong>Places disponibles :</strong> <?php echo esc_html($places); ?></p><?php endif; ?>
                 <a href="<?php the_permalink(); ?>" class="bouton">Détails</a>
+                <?php
+                $type_organisateur = get_post_meta(get_the_ID(), '_resa_organisateur_type', true);
+                if ($type_organisateur === 'collectivite') :
+                    $event_id = get_the_ID();
+                    $url_reservation = home_url('/reserver-un-evenement') . '?id=' . $event_id;
+                ?>
+                    <a href="<?php echo esc_url($url_reservation); ?>" class="bouton">M'inscrire</a>
+                <?php endif; ?>
             </div>
         </article>
-    <?php endwhile;
+<?php endwhile;
     echo '</div>';
 else :
     echo '<p>Aucun événement à venir.</p>';

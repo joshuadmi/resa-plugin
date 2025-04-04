@@ -46,3 +46,5 @@ function resa_creer_evenements()
         'supports' => array('title')
     ));
 }
+// Enregistrement du hook
+add_action('init', 'resa_creer_evenements');
