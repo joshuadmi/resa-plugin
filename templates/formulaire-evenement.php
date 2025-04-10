@@ -1,14 +1,4 @@
 
-<?php
-$type         = $form_data['type'];
-$nom          = $form_data['nom'];
-$adresse      = $form_data['adresse'];
-$contact_nom  = $form_data['contact_nom'];
-$fonction     = $form_data['fonction'];
-$email        = $form_data['email'];
-$tel          = $form_data['tel'];
-$lieu         = $form_data['lieu'];
-?>
     <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
         <input type="hidden" name="action" value="traiter_evenement">
         <h3>Demande de prestation</h3>

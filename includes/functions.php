@@ -41,12 +41,7 @@ function resa_calculer_cout_estime($type, $participants)
 }
 
 // Activation du plugin
-function resa_activation()
-{
-    resa_creer_evenements(); // Crée les CPT
-    flush_rewrite_rules();   // Met à jour les permaliens
-}
-register_activation_hook(__FILE__, 'resa_activation');
+
 
 
 // Fonction utilitaire pour inclure un template

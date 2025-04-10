@@ -23,35 +23,32 @@ function afficher_formulaire_evenement()
     $current_user = wp_get_current_user();
 
     // Vérification si l'utilisateur est un organisateur
-    $args = array(
-        'post_type'      => 'organisateur',
-        'post_status'    => 'publish',
-        'meta_key'       => 'user_id',
-        'meta_value'     => $current_user->ID,
-        'posts_per_page' => 1
+    global $wpdb;
+    $table = $wpdb->prefix . 'resa_organisateurs';
+    
+    $organisateur = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM $table WHERE user_id = %d LIMIT 1",
+            $current_user->ID
+        )
     );
-
-    $organisateurs = get_posts($args);
-
-    if (empty($organisateurs)) {
+    
+    if (!$organisateur) {
         return '<p>Aucun profil organisateur validé trouvé.</p>';
     }
 
-    $organisateur = $organisateurs[0];
-
-    // Données à passer au template
-    $form_data = array(
-        'type'         => get_post_meta($organisateur->ID, 'organisateur_type', true),
-        'nom'          => get_the_title($organisateur),
-        'adresse'      => get_post_meta($organisateur->ID, 'organisateur_adresse', true),
-        'contact_nom'  => get_post_meta($organisateur->ID, 'organisateur_contact_nom', true),
-        'fonction'     => get_post_meta($organisateur->ID, 'organisateur_contact_fonction', true),
-        'email'        => get_post_meta($organisateur->ID, 'organisateur_email', true),
-        'tel'          => get_post_meta($organisateur->ID, 'organisateur_tel', true),
-        'lieu'         => get_post_meta($organisateur->ID, 'organisateur_lieu_defaut', true),
-    );
+        $type        = $organisateur->type;
+$nom         = $organisateur->nom;
+$adresse     = $organisateur->adresse;
+$contact_nom = $organisateur->contact_nom;
+$fonction    = $organisateur->contact_fonction;
+$email       = $organisateur->email;
+$tel         = $organisateur->tel;
+$lieu        = $organisateur->lieu_defaut;
 
     ob_start();
+
+    
     include plugin_dir_path(__FILE__) . '../templates/formulaire-evenement.php';
     return ob_get_clean();
 }
