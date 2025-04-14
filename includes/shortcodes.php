@@ -21,34 +21,52 @@ function afficher_formulaire_evenement()
     }
 
     $current_user = wp_get_current_user();
-
-    // Vérification si l'utilisateur est un organisateur
     global $wpdb;
     $table = $wpdb->prefix . 'resa_organisateurs';
-    
+
+    // Récupération du profil organisateur lié à l'utilisateur connecté
     $organisateur = $wpdb->get_row(
-        $wpdb->prepare(
-            "SELECT * FROM $table WHERE user_id = %d LIMIT 1",
-            $current_user->ID
-        )
+        $wpdb->prepare("SELECT * FROM $table WHERE user_id = %d LIMIT 1", $current_user->ID)
     );
-    
+
     if (!$organisateur) {
         return '<p>Aucun profil organisateur validé trouvé.</p>';
     }
 
-        $type        = $organisateur->type;
-$nom         = $organisateur->nom;
-$adresse     = $organisateur->adresse;
-$contact_nom = $organisateur->contact_nom;
-$fonction    = $organisateur->contact_fonction;
-$email       = $organisateur->email;
-$tel         = $organisateur->tel;
-$lieu        = $organisateur->lieu_defaut;
+    // On récupère le type (entreprise ou collectivite) depuis la table personnalisée
+    $type = $organisateur->type;
+
+    // Si l'organisateur appartient à une collectivité, on n'affiche pas le formulaire
+    if ($type === 'collectivite') {
+        return '<p>Pour votre collectivité, les événements seront créés par l\'administration dans le dashboard. Veuillez contacter l\'administrateur pour plus d\'informations.</p>';
+    }
+
+    // Pour un organisateur de type "entreprise", on prépare les autres données
+    $nom          = $organisateur->nom;
+    $adresse      = $organisateur->adresse;
+    $contact_nom  = $organisateur->contact_nom;
+    $fonction     = $organisateur->contact_fonction;
+    $email        = $organisateur->email;
+    $tel          = $organisateur->tel;
+    $lieu         = $organisateur->lieu_defaut;
+
+    // Optionnel : préparer un tableau de données pour le template
+    $form_data = array(
+        'type'         => $type,
+        'nom'          => $nom,
+        'adresse'      => $adresse,
+        'contact_nom'  => $contact_nom,
+        'fonction'     => $fonction,
+        'email'        => $email,
+        'tel'          => $tel,
+        'lieu'         => $lieu,
+    );
+
+    // Rendre ces variables accessibles dans le template
+    // Tu peux les extraire ainsi pour simplifier l'accès :
+    extract($form_data);
 
     ob_start();
-
-    
     include plugin_dir_path(__FILE__) . '../templates/formulaire-evenement.php';
     return ob_get_clean();
 }
@@ -56,9 +74,12 @@ add_shortcode('demande_evenement', 'afficher_formulaire_evenement');
 
 
 
+
 // Shortcode : Formulaire de réservation invité
 
 function afficher_formulaire_reservation_invite()
+
+
 {
     ob_start();
 
@@ -106,3 +127,5 @@ function resa_afficher_evenements_shortcode($atts)
     return ob_get_clean();
 }
 add_shortcode('resa_afficher_evenements', 'resa_afficher_evenements_shortcode');
+
+

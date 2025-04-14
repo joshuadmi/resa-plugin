@@ -1,8 +1,12 @@
 
+
+<!--   Formulaire de demande de prestation destiné aux organisateurs connectés   -->
     <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
-        <input type="hidden" name="action" value="traiter_evenement">
+        <input type="hidden" name="action" value="traiter_evenement"> <!-- nom de la fonction qui va traiter le formulaire -->
         <h3>Demande de prestation</h3>
 
+
+        <!-- Uitlisation de fonctions de sécurité: esc_attr , esc_textarea -->
         <p><label>Nom de l'entité :</label><br>
             <input type="text" name="entite_nom" value="<?php echo esc_attr($nom); ?>">
         </p>
@@ -67,6 +71,7 @@
             <p><em>En tant que collectivité, la prestation pourra être gratuite selon les subventions. Une vérification sera faite.</em></p>
         <?php endif; ?>
 
+        <!-- calcul du coût estimé avec js -->
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const typeSelect = document.querySelector('select[name="type_prestation"]');
@@ -78,6 +83,7 @@
                     const participants = parseInt(participantsInput.value) || 0;
                     let tarifUnitaire = 0;
 
+                    // Définition du prix par personne
                     switch (type) {
                         case 'formation':
                             tarifUnitaire = 30;

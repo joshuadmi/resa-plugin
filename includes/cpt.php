@@ -1,8 +1,13 @@
 <?php
-// Fichier : includes/cpt.php
+// Ce fichier définit les Custom Post Types qui servent à gérer les données spécifiques
+// (ici, les événements, organisateurs et réservations). On utilise les CPT pour bénéficier
+// de l'interface native WordPress dans l'admin et faciliter la gestion, même si on migre
+// progressivement vers des tables personnalisées via PDO.
 
 // CPT Événements
 function resa_creer_evenements() {
+
+    //textes affichés dans l'interface
     $libelles = array(
         'name'          => 'Événements',        // Nom au pluriel affiché dans le menu
         'singular_name' => 'Événement',         // Nom singulier
@@ -10,6 +15,7 @@ function resa_creer_evenements() {
         'add_new_item'  => 'Nouvel événement',  // Texte du bouton pour ajouter un événement
     );
 
+    // paramètres pour ce CPT
     $parametres = array(
         'labels'        => $libelles,
         'public'        => true,                // Visible sur le front et dans l’admin
@@ -21,7 +27,7 @@ function resa_creer_evenements() {
 
     register_post_type('evenement', $parametres);
 
-    // CPT Organisateurs
+    // CPT Organisateurs. textes affichés pour les organisateurs dans l'admin
     $libelles_organisateur = array(
         'name'          => 'Organisateurs',
         'singular_name' => 'Organisateur',
@@ -29,25 +35,27 @@ function resa_creer_evenements() {
         'menu_name'     => 'Organisateurs'
     );
 
+        // Paramètres pour le CPT "organisateur"
     $parametres_organisateur = array(
         'labels'        => $libelles_organisateur,
         'public'        => false,                // Non visible sur le front-end
         'show_ui'       => true,                 // Visible dans l’admin
         'show_in_menu'  => true,
-        'menu_icon'     => 'dashicons-groups',
-        'supports'      => array('title', 'editor')
+        'menu_icon'     => 'dashicons-groups', // Icône dans le menu admin
+        'supports'      => array('title', 'editor')// le titre et l'éditeur pour stocker les infos de base
     );
 
     register_post_type('organisateur', $parametres_organisateur);
 
-    // CPT Réservations
+    // CPT Réservations. sert à gérer les réservations, qui seront aussi accessibles depuis l'admin.
     $libelles_reservation = array(
         'name'          => 'Réservations',
         'singular_name' => 'Réservation'
     );
+
     $parametres_reservation = array(
         'labels'       => $libelles_reservation,
-        'public'       => false,              // On veut garder ce CPT pour l’admin éventuellement
+        'public'       => false,              // On veut garder ce CPT pour l’admin
         'show_ui'      => true,
         'supports'     => array('title')
     );

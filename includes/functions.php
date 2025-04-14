@@ -40,10 +40,6 @@ function resa_calculer_cout_estime($type, $participants)
     return $participants * $tarif;
 }
 
-// Activation du plugin
-
-
-
 // Fonction utilitaire pour inclure un template
 function resa_inclure_template($fichier, $variables = array())
 {

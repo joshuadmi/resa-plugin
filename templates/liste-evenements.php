@@ -33,13 +33,30 @@ if ($query->have_posts()) :
                 <?php if ($places) : ?><p><strong>Places disponibles :</strong> <?php echo esc_html($places); ?></p><?php endif; ?>
                 <a href="<?php the_permalink(); ?>" class="bouton">Détails</a>
                 <?php
-                $type_organisateur = get_post_meta(get_the_ID(), '_resa_organisateur_type', true);
-                if ($type_organisateur === 'collectivite') :
-                    $event_id = get_the_ID();
-                    $url_reservation = home_url('/reserver-un-evenement') . '?id=' . $event_id;
-                ?>
-                    <a href="<?php echo esc_url($url_reservation); ?>" class="bouton">M'inscrire</a>
+                global $wpdb;
+
+                $organisateur_id = get_post_meta(get_the_ID(), '_resa_organisateur_id', true);
+                $afficher_bouton = false;
+
+                if ($organisateur_id) {
+                    $table = $wpdb->prefix . 'resa_organisateurs';
+                    $type = $wpdb->get_var($wpdb->prepare("SELECT type FROM $table WHERE id = %d", $organisateur_id));
+
+                    if ($type === 'collectivite') {
+                        $afficher_bouton = true;
+                    }
+                }
+
+                if ($afficher_bouton) : ?>
+
+                    <a href="<?php echo esc_url(home_url('/reserver-un-evenement?id=' . get_the_ID())); ?>" class="bouton">S'inscrire</a>
+
+
+
+
+
                 <?php endif; ?>
+
             </div>
         </article>
 <?php endwhile;

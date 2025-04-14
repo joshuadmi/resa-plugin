@@ -1,7 +1,8 @@
 <?php
-$current_user = wp_get_current_user();
+$current_user = wp_get_current_user(); // variable qui stocke l'utilisateur connecté
 
-if (is_user_logged_in()) : ?>
+// Si l'utilisateur est connecté
+if (is_user_logged_in()) : ?> 
     <p>Connecté en tant que <strong><?php echo esc_html($current_user->display_name); ?></strong></p>
     <a class="bouton" href="<?php echo esc_url(wp_logout_url(home_url())); ?>">Se déconnecter</a>
     <a class="bouton" href="<?php echo esc_url(home_url('/creation-devenement')); ?>">Demander une prestation</a>

@@ -1,11 +1,14 @@
 
     
     <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
+    <!-- Utilisation de nonce  pour plus de sécurité , empêche des envois malveillants-->
         <?php wp_nonce_field('create_organisateur_action', 'organisateur_nonce'); ?>
         <input type="hidden" name="action" value="create_organisateur">
 
         <p><label>Type d'entité :</label><br>
             <select name="organisateur_type" required>
+                
+                <!-- choisir entre collectivité ou entreprise -->
                 <option value="">-- Sélectionnez --</option>
                 <option value="collectivite">Collectivité</option>
                 <option value="entreprise">Entreprise</option>
