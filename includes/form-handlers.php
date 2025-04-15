@@ -1,6 +1,5 @@
 <?php
 
-
 function traiter_creation_organisateur()
 {
 

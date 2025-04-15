@@ -105,27 +105,28 @@ add_shortcode('resa_login_logout', 'resa_bloc_connexion');
 
 
 
-function resa_afficher_evenements_shortcode($atts)
-{
+function resa_afficher_evenements_shortcode($atts) {
     $atts = shortcode_atts(array(
-        'nombre' => 5,
+        'nombre' => -1,
         'ordre' => 'DESC'
     ), $atts);
+
+    $mot_cle = isset($_GET['recherche_evenement']) ? sanitize_text_field($_GET['recherche_evenement']) : '';
 
     $args = array(
         'post_type' => 'evenement',
         'posts_per_page' => intval($atts['nombre']),
-        'order' => $atts['ordre']
+        'order' => $atts['ordre'],
+        's' => $mot_cle // filtre par mot-clé
     );
 
     $query = new WP_Query($args);
 
     ob_start();
-
-    // Rend la variable $query accessible dans le template
     include plugin_dir_path(__FILE__) . '../templates/liste-evenements.php';
     return ob_get_clean();
 }
+
 add_shortcode('resa_afficher_evenements', 'resa_afficher_evenements_shortcode');
 
 

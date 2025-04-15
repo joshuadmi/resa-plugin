@@ -1,4 +1,13 @@
+<form method="get" action="">
+    <input type="text" name="recherche_evenement" placeholder="Rechercher un événement..." value="<?php echo isset($_GET['recherche_evenement']) ? esc_attr($_GET['recherche_evenement']) : ''; ?>">
+    <button type="submit">Rechercher</button>
+</form>
+
+
+
 <?php
+
+
 if (!isset($query) || !($query instanceof WP_Query)) {
     echo '<p>Erreur : la requête n’a pas été transmise.</p>';
     return;
