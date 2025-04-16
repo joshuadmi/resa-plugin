@@ -1,8 +1,13 @@
-<form method="get" action="">
-    <input type="text" name="recherche_evenement" placeholder="Rechercher un événement..." value="<?php echo isset($_GET['recherche_evenement']) ? esc_attr($_GET['recherche_evenement']) : ''; ?>">
-    <button type="submit">Rechercher</button>
-</form>
 
+
+<form method="get" action="">
+    <input type="text" name="recherche_evenement" placeholder="Rechercher par titre ou mot-clé">
+
+    <input type="text" name="filtre_lieu" placeholder="Lieu">
+    
+    <button type="submit">Filtrer</button>
+    <a href="<?php echo esc_url(home_url('/')); ?>">Effacer la recherche</a>
+</form>
 
 
 <?php
